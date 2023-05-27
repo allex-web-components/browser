@@ -1,0 +1,19 @@
+{
+  "browserify": {
+    "dist/browserified.js": "./index.js"
+  },
+  "js": {},
+  "css": {},
+  "dependencies": {
+    "js": [
+    ]
+  },
+	"additionaltargets": {
+    "css": [
+    ]
+  },
+  "protoboard": {
+    "role": "webcomponent",
+    "js_doc_filters": "^(src)"
+  }
+}
