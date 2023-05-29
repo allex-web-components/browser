@@ -30,24 +30,26 @@ function createViewTransition (lib, mylib) {
   'use strict';
 
     var _transition;
+    function safeRun (func) {
+      if (lib.isFunction(func)) {
+        func();
+      }
+    }
     function startTransition (func) {
       var promise;
       if (_transition) {
+        safeRun(func);
         return;
       }
       if (!document.startViewTransition) {
-        if (lib.isFunction(func)) {
-          func();
-        }
+        safeRun(func);
         return;
       }
       _transition = lib.q.defer();
       promise = _transition.promise;
       document.startViewTransition (function () {
         var ret = promise;
-        if (lib.isFunction(func)) {
-          func();
-        }
+        safeRun(func);
         promise = null;
         func = null;
         return ret;
