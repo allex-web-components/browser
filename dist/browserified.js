@@ -44,12 +44,13 @@ module.exports = createClipboardFunctionality;
   require('./viewtransitioncreator')(execlib.lib, mylib);
   require('./messagingcreator')(execlib.lib, mylib);
   require('./clipboardcreator')(execlib.lib, mylib);
+  require('./printingcreator')(execlib.lib, mylib);
 
 
   lR.register('allex_browserwebcomponent', mylib);
 })(ALLEX);
 
-},{"./clipboardcreator":1,"./messagingcreator":3,"./viewtransitioncreator":4}],3:[function(require,module,exports){
+},{"./clipboardcreator":1,"./messagingcreator":3,"./printingcreator":4,"./viewtransitioncreator":5}],3:[function(require,module,exports){
 function createWindowMessaging (lib, mylib) {
   'use strict';
 
@@ -64,6 +65,26 @@ function createWindowMessaging (lib, mylib) {
 }
 module.exports = createWindowMessaging;
 },{}],4:[function(require,module,exports){
+function createPrintingFunctionality (lib, mylib) {
+  'use strict';
+
+  var frame;
+
+  function createFrame () {
+    if (frame) {return;}
+    frame = document.createElement('iframe');
+    frame.onload = setPrint;
+    frame.style.display = 'none';
+  }
+
+  function print (html) {
+    createFrame();
+  }
+
+  mylib.print = print;
+}
+module.exports = createPrintingFunctionality;
+},{}],5:[function(require,module,exports){
 function createViewTransition (lib, mylib) {
   'use strict';
 
