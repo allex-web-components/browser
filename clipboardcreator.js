@@ -1,11 +1,13 @@
 function createClipboardFunctionality (lib, mylib) {
   'use strict';
 
-function copyToClipboard(textToCopy) {
+function copyToClipboard(textToCopy, parentelement) {
     // Navigator clipboard api needs a secure context (https)
+    var target;
     if (navigator.clipboard && window.isSecureContext) {
         navigator.clipboard.writeText(textToCopy);
     } else {
+        target = parentelement || document.body;
         // Use the 'out of viewport hidden text area' trick
         const textArea = document.createElement("textarea");
         textArea.value = textToCopy;
@@ -14,7 +16,7 @@ function copyToClipboard(textToCopy) {
         textArea.style.position = "absolute";
         textArea.style.left = "-999999px";
             
-        document.body.prepend(textArea);
+        target.prepend(textArea);
         textArea.select();
 
         try {
