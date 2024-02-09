@@ -8,6 +8,7 @@
   require('./messagingcreator')(execlib.lib, mylib);
   require('./clipboardcreator')(execlib.lib, mylib);
   require('./printingcreator')(execlib.lib, mylib);
+  require('./saveascreator')(execlib.lib, mylib);
 
 
   lR.register('allex_browserwebcomponent', mylib);

@@ -47,12 +47,13 @@ module.exports = createClipboardFunctionality;
   require('./messagingcreator')(execlib.lib, mylib);
   require('./clipboardcreator')(execlib.lib, mylib);
   require('./printingcreator')(execlib.lib, mylib);
+  require('./saveascreator')(execlib.lib, mylib);
 
 
   lR.register('allex_browserwebcomponent', mylib);
 })(ALLEX);
 
-},{"./clipboardcreator":1,"./messagingcreator":3,"./printingcreator":4,"./viewtransitioncreator":5}],3:[function(require,module,exports){
+},{"./clipboardcreator":1,"./messagingcreator":3,"./printingcreator":4,"./saveascreator":5,"./viewtransitioncreator":6}],3:[function(require,module,exports){
 function createWindowMessaging (lib, mylib) {
   'use strict';
 
@@ -87,6 +88,31 @@ function createPrintingFunctionality (lib, mylib) {
 }
 module.exports = createPrintingFunctionality;
 },{}],5:[function(require,module,exports){
+function createSaveAs (lib, mylib) {
+  'use strict';
+
+  mylib.saveAs = function saveAs (blob,name){
+		var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+		// Test for download link support
+		if( 'download' in a ){
+
+			
+			a.setAttribute('href', url);
+			a.setAttribute('download', name);
+
+			// Simulate a click to trigger download
+			var event = new MouseEvent('click', {'view': window});
+			a.dispatchEvent(event);
+		}
+		else{
+			// fallover, open resource in new tab.
+			window.open(url, '_blank', '');
+		}
+	};
+}
+module.exports = createSaveAs;
+},{}],6:[function(require,module,exports){
 function createViewTransition (lib, mylib) {
   'use strict';
 
