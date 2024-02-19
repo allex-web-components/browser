@@ -9,6 +9,7 @@
   require('./clipboardcreator')(execlib.lib, mylib);
   require('./printingcreator')(execlib.lib, mylib);
   require('./saveascreator')(execlib.lib, mylib);
+  require('./utilscreator')(execlib.lib, mylib);
 
 
   lR.register('allex_browserwebcomponent', mylib);
