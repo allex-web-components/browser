@@ -37,6 +37,137 @@ module.exports = createClipboardFunctionality;
 
 
 },{}],2:[function(require,module,exports){
+function createCookieFunctionality (lib, mylib) {
+  'use strict';
+
+  function setCookie (name, value, daysToPersist) {
+    var d = new Date();
+
+    d.setDate(d.getDate() + (lib.isNumber(daysToPersist) ? daysToPersist: 180));
+
+    //d.setTime(d.getTime() + (exdays * 24 * 60 * 60 * 1000));
+    var expires = "expires=" + d.toUTCString();
+    document.cookie = name + "=" + value + ";" + expires + ";path=/";
+  }
+
+  function getCookie (cname) {
+    var name = cname + "=";
+    var ca = document.cookie.split(';');
+    for (var i = 0; i < ca.length; i++) {
+        var c = ca[i];
+        while (c.charAt(0) === ' ') {
+            c = c.substring(1);
+        }
+        if (c.indexOf(name) === 0) {
+            return c.substring(name.length, c.length);
+        }
+    }
+    return "";
+  }
+  mylib.setCookie = setCookie;
+  mylib.getCookie = getCookie;
+}
+module.exports = createCookieFunctionality;
+},{}],3:[function(require,module,exports){
+function createElements (execlib, lR, mylib) {
+  'use strict';
+
+  var lib = execlib.lib;
+  var applib = lR.get('allex_applib');
+  require('./themingcreator')(lib, applib, mylib);
+}
+module.exports = createElements;
+},{"./themingcreator":4}],4:[function(require,module,exports){
+function createThemingElement (lib, applib, mylib) {
+  'use strict';
+
+  var BasicElement = applib.BasicElement;
+
+  function ThemingElement (id, options) {
+    BasicElement.call(this, id, options);
+    this.parentBodyObserver = null;
+    this.parentMessager = null;
+    this.theme = null;
+  }
+  lib.inherit(ThemingElement, BasicElement);
+  ThemingElement.prototype.__cleanUp = function () {
+    this.theme = null;
+    if (this.parentMessager) {
+      window.removeEventListener(this.parentMessager);
+    }
+    this.parentMessager = null;
+    if(this.parentBodyObserver) {
+       this.parentBodyObserver.disconnect();
+    }
+    this.parentBodyObserver = null;
+    BasicElement.prototype.__cleanUp.call(this);
+  };
+  ThemingElement.prototype.staticEnvironmentDescriptor = function (myname) {
+    return lib.extendWithConcat(BasicElement.prototype.staticEnvironmentDescriptor.call(this, myname)||{}, {
+    });
+  };
+  ThemingElement.prototype.actualEnvironmentDescriptor = function (myname) {
+    this.doWithThemes(setInitialTheme.bind(this));
+    if (window.parent && window.parent != window) {
+      this.parentMessager = onParentMesage.bind(this);
+      window.addEventListener('message', this.parentMessager);
+    }
+    return lib.extendWithConcat(BasicElement.prototype.actualEnvironmentDescriptor.call(this, myname)||{}, {
+    });
+  };
+
+  ThemingElement.prototype.doWithThemes = function (func) {
+    var themes = this.getConfigVal('themes');
+    if (!lib.isNonEmptyArray(themes)) {
+      return;
+    }
+    func(themes);
+  };
+
+  //statics
+  function setInitialTheme (themes) {
+    var urlparams = new URLSearchParams(document.location.search);
+    setTheme.call(this, themes, urlparams.get('theme') || themes[0]);
+  }
+  function setArbitraryTheme (theme, themes) {
+    setTheme.call(this, themes, theme);
+  }
+  function setTheme (themes, theme) {
+    if (!document.body) {
+      return;
+    }
+    themes.reduce(remover, theme);
+    themes.reduce(adder, theme);
+    mylib.setCookie('themingCookie', theme);
+    this.set('theme', theme);
+  }
+  function remover (ret, theme) {
+    if (ret!=theme) {
+        document.body.classList.remove(theme);
+    }
+    return ret;
+  }
+  function adder (ret, theme) {
+      if (ret==theme) {
+          document.body.classList.add(theme);
+      }
+      return ret;
+  }
+  function onParentMesage (msg) {
+    var newtheme;
+    if (!(msg && msg.data && msg.data.request == 'changeTheme')) {
+      return;
+    }
+    newtheme = msg.data.theme;
+    this.doWithThemes(setArbitraryTheme.bind(this, newtheme));
+    newtheme = null;
+  }
+  //endof statics
+  
+  applib.registerElementType('Theming', ThemingElement);
+}
+module.exports = createThemingElement;
+},{}],5:[function(require,module,exports){
 (function (execlib) {
   'use strict';
 
@@ -48,13 +179,15 @@ module.exports = createClipboardFunctionality;
   require('./clipboardcreator')(execlib.lib, mylib);
   require('./printingcreator')(execlib.lib, mylib);
   require('./saveascreator')(execlib.lib, mylib);
+  require('./cookiefunctionalitycreator')(execlib.lib, mylib);
   require('./utilscreator')(execlib.lib, mylib);
 
+  require('./elements')(execlib, lR, mylib);
 
   lR.register('allex_browserwebcomponent', mylib);
 })(ALLEX);
 
-},{"./clipboardcreator":1,"./messagingcreator":3,"./printingcreator":4,"./saveascreator":5,"./utilscreator":6,"./viewtransitioncreator":7}],3:[function(require,module,exports){
+},{"./clipboardcreator":1,"./cookiefunctionalitycreator":2,"./elements":3,"./messagingcreator":6,"./printingcreator":7,"./saveascreator":8,"./utilscreator":9,"./viewtransitioncreator":10}],6:[function(require,module,exports){
 function createWindowMessaging (lib, mylib) {
   'use strict';
 
@@ -68,7 +201,7 @@ function createWindowMessaging (lib, mylib) {
   mylib.postMessage = postMessage;
 }
 module.exports = createWindowMessaging;
-},{}],4:[function(require,module,exports){
+},{}],7:[function(require,module,exports){
 function createPrintingFunctionality (lib, mylib) {
   'use strict';
 
@@ -88,7 +221,7 @@ function createPrintingFunctionality (lib, mylib) {
   mylib.print = print;
 }
 module.exports = createPrintingFunctionality;
-},{}],5:[function(require,module,exports){
+},{}],8:[function(require,module,exports){
 function createSaveAs (lib, mylib) {
   'use strict';
 
@@ -113,7 +246,7 @@ function createSaveAs (lib, mylib) {
 	};
 }
 module.exports = createSaveAs;
-},{}],6:[function(require,module,exports){
+},{}],9:[function(require,module,exports){
 function createBrowserUtils (lib, mylib) {
   'use strict';
 
@@ -126,7 +259,7 @@ function createBrowserUtils (lib, mylib) {
   }
 }
 module.exports = createBrowserUtils;
-},{}],7:[function(require,module,exports){
+},{}],10:[function(require,module,exports){
 function createViewTransition (lib, mylib) {
   'use strict';
 
@@ -169,4 +302,4 @@ function createViewTransition (lib, mylib) {
     }
 }
 module.exports = createViewTransition;
-},{}]},{},[2]);
+},{}]},{},[5]);
